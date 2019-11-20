@@ -1,128 +1,121 @@
-import numpy as np
+import pygame
 from OpenGL.GL import *
-from math import atan2
+
+x = 20.0
+ytop = 10.0
+yfloor = -1.0
+z = 20.0
 
 
-class Room:
+def loadFloor():
+    textureSurface = pygame.image.load('floorTexture.jpg')
+    textureData = pygame.image.tostring(textureSurface, "RGBA", 1)
+    width = textureSurface.get_width()
+    height = textureSurface.get_height()
 
-    x = 10
-    y = 3
-    z = 10
+    glEnable(GL_TEXTURE_2D)
+    texid = glGenTextures(1)
 
-    num = 5
+    glBindTexture(GL_TEXTURE_2D, texid)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData)
 
-    grid = [
-        [x, 0, z],
-        [x, 0, -z],
-        [-x, 0, -z],
-        [-x, 0, z],
-        [x, y, z],
-        [x, y, -z],
-        [-x, y, -z],
-        [-x, y, z]
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glBegin(GL_QUADS)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(-x, yfloor, -z)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(x, yfloor, -z)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(x, yfloor, z)
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(-x, yfloor, z)
+    glEnd()
 
-    ]
 
-    mesh = [list(zip([x]*num, [0]*num, np.linspace(-z, z, num))),
-            list(zip(np.linspace(-x, x, num), [0]*num, [-z]*num)),
-            list(zip([-x]*num, [0]*num, np.linspace(-z, z, num))),
-            list(zip(np.linspace(-x, x, num), [0]*num, [z]*num)),
-            list(zip([x]*num, [y]*num, np.linspace(-z, z, num))),
-            list(zip(np.linspace(-x, x, num), [y]*num, [-z]*num)),
-            list(zip([-x]*num, [y]*num, np.linspace(-z, z, num))),
-            list(zip(np.linspace(-x, x, num), [y]*num, [z]*num)),
-            list(zip([x]*num, np.linspace(0, y, num), [z]*num)),
-            list(zip([x]*num, np.linspace(0, y, num), [-z]*num)),
-            list(zip([-x]*num, np.linspace(0, y, num), [-z]*num)),
-            list(zip([-x]*num, np.linspace(0, y, num), [z]*num))]
+def loadWalls():
+    textureSurface = pygame.image.load('wallTexture.jpg')
+    textureData = pygame.image.tostring(textureSurface, "RGBA", 1)
+    width = textureSurface.get_width()
+    height = textureSurface.get_height()
 
-    colors = [
-        (1, 0, 0),
-        (0, 1, 0),
-        (0, 0, 1),
-        (1, 1, 1),
-        (1, 1, 1),
-        (1, 1, 1),
-        (1, 1, 1),
-        (1, 1, 1),
-        (1, 1, 1),
-        (1, 1, 1),
-        (1, 1, 1),
-        (1, 1, 1)
-    ]
+    glEnable(GL_TEXTURE_2D)
+    texid = glGenTextures(1)
 
-    edges = (
-        (1, 2),
-        (2, 6),
-        (2, 3),
-        (0, 1),
-        (0, 3),
-        (0, 4),
-        (1, 5),
-        (3, 7),
-        (6, 5),
-        (4, 5),
-        (7, 4),
-        (6, 7)
-    )
+    glBindTexture(GL_TEXTURE_2D, texid)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData)
 
-    def __init__(self):
-        self.mul = 800
-        self.mulx = Room.x*self.mul
-        self.mulz = Room.z*self.mul
-        self.muly = Room.y*self.mul
-        self.mesh = list(np.multiply(np.array(Room.mesh), self.mul))
-        self.colors = Room.colors
-        self.edges = Room.edges
-        self.grid = list(np.multiply(np.array(Room.grid), self.mul))
-        self.cont = self.grid
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glBegin(GL_QUADS)
 
-    def move(self, x, y, z):
+    # right wall
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(x, yfloor, -z)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(x, ytop, -z)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(x, ytop, z)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(x, yfloor, z)
 
-        self.mesh = list(map(lambda vert: (x - vert[0],
-                                           y - vert[1],
-                                           z - vert[2]), self.mesh))
+    # left wall
 
-    def draw(self):
-        glLineWidth(3)
-        glBegin(GL_LINES)
-        for edge in self.edges:
-            glColor3f(1, 1, 1)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(-x, yfloor, -z)
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(-x, yfloor, z)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(-x, ytop, z)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(-x, ytop, -z)
 
-            for vertex in edge:
-                glVertex3fv(self.grid[vertex])
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(-x, yfloor, -z)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(-x, ytop, -z)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(x, ytop, -z)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(x, yfloor, -z)
 
-        glEnd()
+    glEnd()
 
-    def drawroom(self):
-        glLineWidth(100)
-        glBegin(GL_LINES)
-        Room.surface(self, 0, 2, (0, 0, 1))
-        Room.surface(self, 1, 3, (0, 0, 1))
-        Room.surface(self, 0, 4, (0, 1, 0))
-        Room.surface(self, 1, 5, (0, 1, 0))
-        Room.surface(self, 2, 6, (0, 1, 0))
-        Room.surface(self, 3, 7, (0, 1, 0))
-        Room.surface(self, 4, 6, (1, 0.8, 0.8))
-        Room.surface(self, 5, 7, (1, 0.8, 0.8))
-        Room.surface(self, 8, 9, (0, 1, 0))
-        Room.surface(self, 9, 10, (0, 1, 0))
-        Room.surface(self, 10, 11, (0, 1, 0))
-        Room.surface(self, 11, 8, (0, 1, 0))
-        glEnd()
 
-    def surface(self, e1, e2, color):
-        glColor3fv(color)
-        for i in range(Room.num):
-            for j in (e1, e2):
-                glVertex3fv(self.mesh[j][i])
 
-    def rotateworld(self, anglex, angley):
-        buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
-        c = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
-        glTranslate(c[0], c[1], c[2])
-        m = buffer.flatten()
-        glRotate(anglex, m[1], m[5], m[9])  # [1]
-        glRotate(angley, m[0], m[4], m[8])  # [1]
-        glRotate(atan2(-m[4], m[5]) * 57.29577, m[2], m[6], m[10])
-        glTranslate(-c[0], -c[1], -c[2])
+def loadEntrance():
+    textureSurface = pygame.image.load('wallTexture.jpg')
+    textureData = pygame.image.tostring(textureSurface, "RGBA", 1)
+    width = textureSurface.get_width()
+    height = textureSurface.get_height()
+
+    glEnable(GL_TEXTURE_2D)
+    texid = glGenTextures(1)
+
+    glBindTexture(GL_TEXTURE_2D, texid)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData)
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glBegin(GL_QUADS)
+
+    # right wall
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(-x, yfloor, z)
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(x, yfloor, z)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(x, ytop, z)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(-x, ytop, z)
+
+    glEnd()

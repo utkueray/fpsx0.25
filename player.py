@@ -1,80 +1,70 @@
-from room import Room
-from math import sqrt, sin, cos
-from math import radians as rad
 from OpenGL.GL import *
-from OpenGL.GLU import *
+from math import *
 import numpy as np
 
 
-class Player(Room):
-    x = 5
-    y = 5
-    z = 100
 
-    vert = [
-        [0, y, -z],
-        [0, -y, -z],
-        [x, 0, -z],
-        [-x, 0, -z]
-    ]
-    edge = (
-        (0, 1),
-        (2, 3)
-    )
+def rotateworld(anglex, angley):
+    buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
+    c = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
+    glTranslate(c[0], c[1], c[2])  # becomes third person if removed
+    m = buffer.flatten()
+    glRotate(anglex, m[1], m[5], m[9])  # [1]
+    glRotate(angley, m[0], m[4], m[8])  # [1]
+    glRotate(atan2(-m[4], m[5]) * 57.29577, m[2], m[6], m[10])
+    glTranslate(-c[0], -c[1], -c[2])
 
-    def __init__(self, display=(1, 1), fov=90):
-        Room.__init__(self)
-        self.vert = Player.vert
-        self.vertcont = self.vert
-        self.edge = Player.edge
-        self.buffer = 2
-        self.crossd = Player.z
-        self.starty = 400
-        self.jumpvel = 30
-        self.relvel = self.jumpvel
-        gluPerspective(fov, (display[0] / display[1]), 0.1, 10000)
-        glTranslatef(0, -self.starty, 0)
-        Player.movecross(self, 0, self.starty, -self.crossd)
 
-    def gravity(self, mul):
-        glTranslatef(0, self.jumpvel*mul, 0)
+def getposition():
+    buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
+    c = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
+    return c
 
-    def checkwall(self):
 
-        k = [False, False]
-        if -self.mulx < Player.getposition(self)[0] < self.mulx:
-            k[0] = True
-        if -self.mulz < Player.getposition(self)[2] < self.mulz:
-            k[1] = True
+def crosshair(edge,vert):
+    glLineWidth(3)
+    glBegin(GL_LINES)
+    glColor3fv((0.047, 0.55, 0.97))
+    for i in edge:
+        for p in i:
+            glVertex3fv(vert[p])
+    glEnd()
 
-        return k
 
-    def crosshair(self):
-        glLineWidth(3)
-        glBegin(GL_LINES)
-        glColor3fv((0.047, 0.55, 0.97))
-        for i in self.edge:
-            for p in i:
-                glVertex3fv(self.vert[p])
-        glEnd()
+def movecross(vert2,x, y, z):
+    vert2 = list(map(lambda vert2: (vert2[0] + x,
+                                       vert2[1] + y,
+                                       vert2[2] + z), vert2))
 
-    def movecross(self, x, y, z):
-        self.vert = list(map(lambda vert: (vert[0] + x,
-                                           vert[1] + y,
-                                           vert[2] + z), self.vert))
 
-    def updatecross(self, thetax, thetay):
-        self.vert = self.vertcont
-        pos = Player.getposition(self)
-        Player.rotatecross(self, thetax, thetay)
-        Player.movecross(self, pos[0], pos[1], pos[2])
+def move(fwd, strafe):
+    m = glGetDoublev(GL_MODELVIEW_MATRIX).flatten()
+    pos = getposition()
+    pos = pos * -1
+    glTranslatef(fwd * m[2], 0, fwd * m[10])
+    glTranslatef(strafe * m[0], 0, strafe * m[8])
 
-    def rotatecross(self, thetax, thetay):
-        self.vert = list(map(lambda vert: (vert[0]*cos(rad(thetax)) - vert[2]*sin(rad(thetax)),
-                                           vert[1]*cos(rad(thetay)) - vert[2]*sin(rad(thetay)),
-                                           vert[2] * cos(rad(thetax)) + vert[0] * sin(rad(thetax))), self.vert))
 
-    def getposition(self):
-        buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
-        c = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
-        return c
+def rotatecross(vert2, thetax, thetay):
+    vert2 = list(map(lambda vert2: (vert2[0] * cos(radians(thetax)) - vert2[2] * sin(radians(thetax)),
+                                    vert2[1] * cos(radians(thetay)) - vert2[2] * sin(radians(thetay)),
+                                    vert2[2] * cos(radians(thetax)) + vert2[0] * sin(radians(thetax))), vert2))
+
+def updatecross():
+    glDisable(GL_DEPTH_TEST)
+    glDisable(GL_CULL_FACE)
+    glDisable(GL_TEXTURE_2D)
+    glDisable(GL_LIGHTING)
+
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    glOrtho(-100, 100, -100, 100,5,50)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    glColor3f(1, 1, 1)
+    glBegin(GL_QUADS)
+    glVertex3f(20.0, 20.0, 0.0)
+    glVertex3f(20.0, -20.0, 0.0)
+    glVertex3f(-20.0, -20.0, 0.0)
+    glVertex3f(-20.0, 20.0, 0.0)
+    glEnd()
