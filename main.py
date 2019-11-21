@@ -3,10 +3,11 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from math import *
-import room, player, objLoader
+import room, player
 import numpy as np
 from timeit import default_timer as timer
-
+from PIL import Image
+from ObjLoader import *
 
 x = 2.0
 y = 1.0
@@ -49,6 +50,12 @@ def Crosshair(x, y, w):
     glVertex2f(x, y-w)
     glVertex2f(x, y+w)
     glEnd()
+
+# add object
+soldier = OBJ("Ss1.obj")
+#barrel = OBJ("jojojoy_barrels.obj")
+
+
 while True:
 
     # clear environment
@@ -58,7 +65,6 @@ while True:
     #room.loadFloor()
     room.loadWalls()
     #room.loadEntrance()
-    objLoader.OBJ("cube.obj")
 
 
 
@@ -157,6 +163,9 @@ while True:
     glPopMatrix()
 
     # update the display surface to screen
+    glCallList(soldier.gl_list)
+    #glCallList(barrel.gl_list)
+
     pygame.display.flip()
     end = timer()
 
