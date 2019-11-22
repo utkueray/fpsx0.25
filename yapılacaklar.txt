@@ -1,0 +1,13 @@
+fire mechanism
+
+collision
+
+light
+shader
+AI
+güzel map
+UI
+karakter model
+objeler ve obstacles
+
+

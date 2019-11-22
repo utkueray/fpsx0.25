@@ -1,0 +1,85 @@
+
+    #back
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(-1.0, -1.0, 1.0)
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(1.0, -1.0, 1.0)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(1.0, 1.0, 1.0)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(-1.0, 1.0, 1.0)
+
+    """
+    # front
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(-1.0, -1.0, -1.0)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(-1.0, 1.0, -1.0)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(1.0, 1.0, -1.0)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(1.0, -1.0, -1.0)
+    #top
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(-1.0, 1.0, -1.0)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(-1.0, 1.0, 1.0)
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(1.0, 1.0, 1.0)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(1.0, 1.0, -1.0)
+
+
+    #floor
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(-1.0, -1.0, -1.0)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(1.0, -1.0, -1.0)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(1.0, -1.0, 1.0)
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(-1.0, -1.0, 1.0)
+"""
+    #right wall
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(1.0, -1.0, -1.0)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(1.0, 1.0, -1.0)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(1.0, 1.0, 1.0)
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(1.0, -1.0, 1.0)
+
+    #left wall
+
+    glTexCoord2f(0.0, 0.0)
+    glVertex3f(-1.0, -1.0, -1.0)
+    glTexCoord2f(1.0, 0.0)
+    glVertex3f(-1.0, -1.0, 1.0)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(-1.0, 1.0, 1.0)
+    glTexCoord2f(0.0, 1.0)
+    glVertex3f(-1.0, 1.0, -1.0)
+
+
+
+
+
+
+slow waking terside koşma
+
+ # gettin hot
+    if not speed:
+        if keys[pygame.K_c]:
+            speed = True
+
+    if speed:
+        vel = 0.05
+        jumpvel = 0.1
+        print("girdi")
+        if keys[pygame.K_c]:
+            speed = False
+    else:
+        vel = 0.1
+        jumpvel = 0.3
+        print("çıktı")
