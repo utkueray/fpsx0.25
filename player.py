@@ -39,8 +39,6 @@ def movecross(vert2,x, y, z):
 
 def move(fwd, strafe):
     m = glGetDoublev(GL_MODELVIEW_MATRIX).flatten()
-    pos = getposition()
-    pos = pos * -1
     glTranslatef(fwd * m[2], 0, fwd * m[10])
     glTranslatef(strafe * m[0], 0, strafe * m[8])
 

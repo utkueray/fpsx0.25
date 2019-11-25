@@ -1,24 +1,22 @@
-import pygame
 from pygame.locals import *
-from OpenGL.GL import *
 from OpenGL.GLU import *
 from math import *
 import room, player
 import numpy as np
 from timeit import default_timer as timer
-from PIL import Image
 from ObjLoader import *
+from bullet import Bullet
 
 x = 2.0
 y = 1.0
 z = 5.0
 
 vert = [
-        [0, y, -z],
-        [0, -y, -z],
-        [x, 0, -z],
-        [-x, 0, -z]
-    ]
+    [0, y, -z],
+    [0, -y, -z],
+    [x, 0, -z],
+    [-x, 0, -z]
+]
 edge = (
     (0, 1),
     (2, 3)
@@ -37,36 +35,39 @@ size = 1080
 display = (size, size)
 
 pygame.display.set_mode(display, DOUBLEBUF | HWSURFACE | FULLSCREEN | OPENGL)
-gluPerspective(90, (size / size), 0.1, 100.0)
+gluPerspective(90, (size / size), 0.1, 500.0)
 start = timer()
 end = timer()
 thetax = 0
 thetay = 0
+
+
 def Crosshair(x, y, w):
     glColor3f(1.0, 1.0, 1.0)
     glBegin(GL_LINES)
-    glVertex2f(x-w, y)
-    glVertex2f(x+w, y)
-    glVertex2f(x, y-w)
-    glVertex2f(x, y+w)
+    glVertex2f(x - w, y)
+    glVertex2f(x + w, y)
+    glVertex2f(x, y - w)
+    glVertex2f(x, y + w)
     glEnd()
 
+
 # add object
-soldier = OBJ("Ss1.obj")
-#barrel = OBJ("jojojoy_barrels.obj")
+sky = OBJ('SnowTerrain.obj')
+m4 = OBJ("M4a1.obj")
 
-
+glTranslatef(0, -0.5, 0)
+bullet_list = []
+bcheck = False
 while True:
 
     # clear environment
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     # load map
-    #room.loadFloor()
+    room.loadFloor()
     room.loadWalls()
-    #room.loadEntrance()
-
-
+    room.loadEntrance()
 
     # keyboard functions
     keys = pygame.key.get_pressed()
@@ -77,9 +78,9 @@ while True:
 
     # gettin hot
 
-    if int(end-start+1) % 23 == 0 and speed:
+    if int(end - start + 1) % 23 == 0 and speed:
         speed = False
-    elif int(end-start+1) % 29 == 0 and not speed:
+    elif int(end - start + 1) % 29 == 0 and not speed:
         speed = True
     if speed:
         vel = 0.05
@@ -87,9 +88,6 @@ while True:
     else:
         vel = 0.1
         jumpvel = 0.3
-
-
-    print(int(end-start)+1)
 
     # Movement
 
@@ -108,12 +106,13 @@ while True:
 
     if jump:
         array = np.linspace(-1, 1)
-        glTranslatef(0, jumpvel*np.linspace(-1, 1)[c], 0)
+        glTranslatef(0, jumpvel * np.linspace(-1, 1)[c], 0)
         c += 1
         if c == len(array):
             c = 0
             jump = False
-    # Define mouse position and camera orientati on
+
+    # Define mouse position and camera orientation
 
     m = glGetDoublev(GL_MODELVIEW_MATRIX).flatten()
     pos = player.getposition()
@@ -140,6 +139,26 @@ while True:
         pygame.mouse.set_pos(mousepos[0], 0)
         wall = False
 
+    # firing
+
+    if pygame.mouse.get_pressed() == (1, 0, 0):
+        b = Bullet()
+        b.brotate(thetax, thetay)
+        b.bmove(pos[0], pos[1], pos[2])
+        bullet_list.append(b)
+
+    for i in bullet_list:
+        i.bmove(i.bvel * sin(radians(i.thetax)), -i.bvel * sin(radians(i.thetay)), -i.bvel * cos(radians(i.thetax)))
+        i.drawbullet()
+        try:
+            if abs(i.pos[0]) > 50:
+                bullet_list.remove(i)
+            if abs(i.pos[2]) > 50:
+                bullet_list.remove(i)
+            if abs(i.pos[1]) > 50 or i.pos[1] < 0:
+                bullet_list.remove(i)
+        except ValueError:
+            pass
     # crosshair
     glDisable(GL_DEPTH_TEST)
 
@@ -154,7 +173,7 @@ while True:
 
     glDisable(GL_DEPTH_TEST)
     mX, mY = pygame.mouse.get_pos()
-    Crosshair(display[0]/2, display[1]/2, 20)
+    Crosshair(display[0] / 2, display[1] / 2, 20)
     glEnable(GL_DEPTH_TEST)
 
     glMatrixMode(GL_PROJECTION)
@@ -162,10 +181,20 @@ while True:
     glMatrixMode(GL_MODELVIEW)
     glPopMatrix()
 
-    # update the display surface to screen
-    glCallList(soldier.gl_list)
-    #glCallList(barrel.gl_list)
+    # add objects
+    glCallList(sky.gl_list)
+
+    glPushMatrix()
+    buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
+    s = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
+    glTranslate(s[0], 0.25, s[2])  # becomes third person if removed
+    glTranslatef(0, jumpvel * np.linspace(-1, 1)[c], 0)
+    m = buffer.flatten()
+    glRotate(-thetax, m[1], m[5], m[9])  # [1]
+    glRotate(thetay + 180, m[0], m[4], m[8])  # [1]
+    glRotate(atan2(-m[4], m[5]) * 57.29577, m[2], m[6], m[10])
+    glCallList(m4.gl_list)
+    glPopMatrix()
 
     pygame.display.flip()
     end = timer()
-
