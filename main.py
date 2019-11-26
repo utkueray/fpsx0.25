@@ -42,6 +42,7 @@ end = timer()
 thetax = 0
 thetay = 0
 
+
 def Crosshair(x, y, w):
     glColor3f(1.0, 1.0, 1.0)
     glBegin(GL_LINES)
@@ -193,7 +194,6 @@ while True:
         except ValueError:
             pass
 
-
     # add objects
     glCallList(sky.gl_list)
 
@@ -229,10 +229,16 @@ while True:
     glMatrixMode(GL_MODELVIEW)
     glPopMatrix()
 
-    drawText(str(int(clock.get_fps())), 1, 95, 100, 100)
-    drawText("Health: "+str(int(100)), 90, 5, 100, 100)
+    #HUD
+    drawText("Time: " + str(int(end-start)), 48, 98, 100, 100)
 
+    drawText(str(int(clock.get_fps())), 1, 95, 100, 100)
+    drawText("Health: " + str(int(100)) + "%", 90, 5, 100, 100)
+
+    scoreBoard = keys[K_TAB]
+    if scoreBoard:
+        drawText("Kills: " + str(int(0)), 48, 70, 100, 100)
+        drawText("Deaths: " + str(int(0)), 48, 65, 100, 100)
     end = timer()
 
     pygame.display.flip()
-
