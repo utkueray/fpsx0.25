@@ -1,8 +1,9 @@
-from pygame.locals import *
 from OpenGL.GLU import *
+from OpenGL import GLUT as glut
 from math import *
 import room, player
 import numpy as np
+from pygame.locals import *
 from timeit import default_timer as timer
 from ObjLoader import *
 from bullet import Bullet
@@ -34,13 +35,12 @@ pygame.init()
 size = 1080
 display = (size, size)
 
-pygame.display.set_mode(display, DOUBLEBUF | HWSURFACE | FULLSCREEN | OPENGL)
+pygame.display.set_mode(display, DOUBLEBUF | FULLSCREEN | OPENGL)
 gluPerspective(90, (size / size), 0.1, 500.0)
 start = timer()
 end = timer()
 thetax = 0
 thetay = 0
-
 
 def Crosshair(x, y, w):
     glColor3f(1.0, 1.0, 1.0)
@@ -55,19 +55,51 @@ def Crosshair(x, y, w):
 # add object
 sky = OBJ('SnowTerrain.obj')
 m4 = OBJ("M4a1.obj")
+house = OBJ("OldHouse.obj")
 
-glTranslatef(0, -0.5, 0)
+glTranslatef(10, -3, 10)
 bullet_list = []
-bcheck = False
+
+clock = pygame.time.Clock()
+
+
+def drawText(value, x, y, windowHeight, windowWidth, step=18):
+    """Draw the given text at given 2D position in window
+    """
+    glMatrixMode(GL_PROJECTION)
+    # For some reason the GL_PROJECTION_MATRIX is overflowing with a single push!
+    # glPushMatrix()
+    matrix = glGetDouble(GL_PROJECTION_MATRIX)
+
+    glLoadIdentity()
+    glOrtho(0.0, windowHeight or 32, 0.0, windowWidth or 32, -1.0, 1.0)
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+    glRasterPos2i(x, y)
+    lines = 0
+    ##	import pdb
+    ##	pdb.set_trace()
+    for character in value:
+        if character == '\n':
+            glRasterPos2i(x, y - (lines * 18))
+        else:
+            glut.glutBitmapCharacter(glut.fonts.GLUT_BITMAP_9_BY_15, ord(character))
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    # For some reason the GL_PROJECTION_MATRIX is overflowing with a single push!
+    # glPopMatrix();
+    glLoadMatrixd(matrix)  # should have un-decorated alias for this...
+
+    glMatrixMode(GL_MODELVIEW)
+
+
 while True:
 
-    # clear environment
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     # load map
     room.loadFloor()
-    room.loadWalls()
-    room.loadEntrance()
 
     # keyboard functions
     keys = pygame.key.get_pressed()
@@ -96,7 +128,7 @@ while True:
 
     if abs(fwd) or abs(strafe):
         try:
-            player.move(fwd, strafe)
+            player.wallcollide(fwd, strafe)
         except IndexError:
             pass
 
@@ -160,9 +192,6 @@ while True:
         except ValueError:
             pass
     # crosshair
-    glDisable(GL_DEPTH_TEST)
-
-    w = 1
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
     glLoadIdentity()
@@ -173,7 +202,7 @@ while True:
 
     glDisable(GL_DEPTH_TEST)
     mX, mY = pygame.mouse.get_pos()
-    Crosshair(display[0] / 2, display[1] / 2, 20)
+    Crosshair(0, 0, 20)
     glEnable(GL_DEPTH_TEST)
 
     glMatrixMode(GL_PROJECTION)
@@ -187,7 +216,7 @@ while True:
     glPushMatrix()
     buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
     s = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
-    glTranslate(s[0], 0.25, s[2])  # becomes third person if removed
+    glTranslate(s[0], 2.75, s[2])  # becomes third person if removed
     glTranslatef(0, jumpvel * np.linspace(-1, 1)[c], 0)
     m = buffer.flatten()
     glRotate(-thetax, m[1], m[5], m[9])  # [1]
@@ -195,6 +224,11 @@ while True:
     glRotate(atan2(-m[4], m[5]) * 57.29577, m[2], m[6], m[10])
     glCallList(m4.gl_list)
     glPopMatrix()
+    glCallList(house.gl_list)
 
-    pygame.display.flip()
     end = timer()
+
+    clock.tick()
+    drawText(str(int(clock.get_fps())), 0, 0, 30, 30)
+    pygame.display.flip()
+

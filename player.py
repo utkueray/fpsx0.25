@@ -1,8 +1,9 @@
 from OpenGL.GL import *
 from math import *
 import numpy as np
+import room
 
-
+margin = 0.3
 
 def rotateworld(anglex, angley):
     buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
@@ -21,7 +22,7 @@ def getposition():
     return c
 
 
-def crosshair(edge,vert):
+def crosshair(edge, vert):
     glLineWidth(3)
     glBegin(GL_LINES)
     glColor3fv((0.047, 0.55, 0.97))
@@ -31,38 +32,45 @@ def crosshair(edge,vert):
     glEnd()
 
 
-def movecross(vert2,x, y, z):
-    vert2 = list(map(lambda vert2: (vert2[0] + x,
-                                       vert2[1] + y,
-                                       vert2[2] + z), vert2))
-
-
-def move(fwd, strafe):
+def move(fwd, strafe):  # add collision detection
     m = glGetDoublev(GL_MODELVIEW_MATRIX).flatten()
     glTranslatef(fwd * m[2], 0, fwd * m[10])
     glTranslatef(strafe * m[0], 0, strafe * m[8])
 
 
-def rotatecross(vert2, thetax, thetay):
-    vert2 = list(map(lambda vert2: (vert2[0] * cos(radians(thetax)) - vert2[2] * sin(radians(thetax)),
-                                    vert2[1] * cos(radians(thetay)) - vert2[2] * sin(radians(thetay)),
-                                    vert2[2] * cos(radians(thetax)) + vert2[0] * sin(radians(thetax))), vert2))
+def checkwall():
+    k = [False, False]
+    if -room.x+margin<= getposition()[0] <= room.x-margin:
+        k[0] = True
+    if -room.z+margin <= getposition()[2] <= room.z-margin:
+        k[1] = True
 
-def updatecross():
-    glDisable(GL_DEPTH_TEST)
-    glDisable(GL_CULL_FACE)
-    glDisable(GL_TEXTURE_2D)
-    glDisable(GL_LIGHTING)
+    return k
 
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(-100, 100, -100, 100,5,50)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-    glColor3f(1, 1, 1)
-    glBegin(GL_QUADS)
-    glVertex3f(20.0, 20.0, 0.0)
-    glVertex3f(20.0, -20.0, 0.0)
-    glVertex3f(-20.0, -20.0, 0.0)
-    glVertex3f(-20.0, 20.0, 0.0)
-    glEnd()
+
+def wallcollide(fwd, strafe):
+    m = glGetDoublev(GL_MODELVIEW_MATRIX).flatten()
+    pos = getposition()
+    pos = pos * -1
+    if checkwall()[0] and checkwall()[1]:
+        glTranslatef(fwd * m[2], 0, fwd * m[10])
+        glTranslatef(strafe * m[0], 0, strafe * m[8])
+    else:
+        if not checkwall()[0]:
+            if pos[0] > room.x-margin:
+                d = pos[0] - room.x
+                glTranslatef(-d-margin, 0, fwd * m[10])
+                glTranslatef(0, 0, strafe * m[8])
+            elif pos[0] < -room.x+margin:
+                d = pos[0] + room.x
+                glTranslatef(-d+margin, 0, fwd * m[10])
+                glTranslatef(0, 0, strafe * m[8])
+
+        elif not checkwall()[1]:
+            if pos[2] > room.z-margin:
+                d = pos[2] - room.z
+                glTranslatef(fwd * m[2], 0, -d-margin)
+                glTranslatef(strafe * m[0], 0, 0)
+            elif pos[2] < -room.z+margin:
+                d = pos[2] + room.z
+                glTranslatef(fwd * m[2], 0, -d+margin)

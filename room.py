@@ -1,10 +1,10 @@
 import pygame
 from OpenGL.GL import *
 
-x = 50.0
-ytop = 10.0
-yfloor = -1.0
-z = 50.0
+x = 30.0
+ytop = 50.0
+yfloor = -1
+z = 30.0
 
 
 def loadFloor():
@@ -119,3 +119,4 @@ def loadEntrance():
     glVertex3f(-x, ytop, z)
 
     glEnd()
+
