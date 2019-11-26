@@ -77,7 +77,7 @@ def drawText(value, x, y, windowHeight, windowWidth, step=18):
     glPushMatrix()
     glLoadIdentity()
     glRasterPos2i(x, y)
-    lines = 0
+    lines = 10
     ##	import pdb
     ##	pdb.set_trace()
     for character in value:
@@ -192,23 +192,7 @@ while True:
                 bullet_list.remove(i)
         except ValueError:
             pass
-    # crosshair
-    glMatrixMode(GL_PROJECTION)
-    glPushMatrix()
-    glLoadIdentity()
-    glOrtho(0.0, display[0], 0.0, display[1], -1.0, 1.0)
-    glMatrixMode(GL_MODELVIEW)
-    glPushMatrix()
-    glLoadIdentity()
 
-    glDisable(GL_DEPTH_TEST)
-    Crosshair(size/2, size/2, 15)
-    glEnable(GL_DEPTH_TEST)
-
-    glMatrixMode(GL_PROJECTION)
-    glPopMatrix()
-    glMatrixMode(GL_MODELVIEW)
-    glPopMatrix()
 
     # add objects
     glCallList(sky.gl_list)
@@ -226,7 +210,27 @@ while True:
     glPopMatrix()
 
     glCallList(house.gl_list)
-    drawText(str(int(clock.get_fps())), 0, 0, 30, 30)
+
+    # crosshair
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    glOrtho(0.0, display[0], 0.0, display[1], -1.0, 1.0)
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    glDisable(GL_DEPTH_TEST)
+    Crosshair(size / 2, size / 2, 15)
+    glEnable(GL_DEPTH_TEST)
+
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glPopMatrix()
+
+    drawText(str(int(clock.get_fps())), 1, 95, 100, 100)
+    drawText("Health: "+str(int(100)), 90, 5, 100, 100)
 
     end = timer()
 
