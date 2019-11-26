@@ -95,6 +95,7 @@ def drawText(value, x, y, windowHeight, windowWidth, step=18):
 
 
 while True:
+    clock.tick()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -201,8 +202,7 @@ while True:
     glLoadIdentity()
 
     glDisable(GL_DEPTH_TEST)
-    mX, mY = pygame.mouse.get_pos()
-    Crosshair(0, 0, 20)
+    Crosshair(size/2, size/2, 15)
     glEnable(GL_DEPTH_TEST)
 
     glMatrixMode(GL_PROJECTION)
@@ -224,11 +224,11 @@ while True:
     glRotate(atan2(-m[4], m[5]) * 57.29577, m[2], m[6], m[10])
     glCallList(m4.gl_list)
     glPopMatrix()
+
     glCallList(house.gl_list)
+    drawText(str(int(clock.get_fps())), 0, 0, 30, 30)
 
     end = timer()
 
-    clock.tick()
-    drawText(str(int(clock.get_fps())), 0, 0, 30, 30)
     pygame.display.flip()
 

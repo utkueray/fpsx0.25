@@ -48,7 +48,6 @@ class Bullet():
         glLineWidth(3)
         glBegin(GL_LINES)
         for edge in self.bedges:
-            glColor3f(1, 0, 0)
 
             for vertex in edge:
                 glVertex3fv(self.bvertices[vertex])
