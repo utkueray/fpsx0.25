@@ -5,6 +5,9 @@ import room
 
 margin = 0.3
 
+houseSize = [-5.5, 5.5, -11.5, 11.5]
+
+
 def rotateworld(anglex, angley):
     buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
     c = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
@@ -40,11 +43,18 @@ def move(fwd, strafe):  # add collision detection
 
 def checkwall():
     k = [False, False]
-    if -room.x+margin<= getposition()[0] <= room.x-margin:
+    if -room.x + margin <= getposition()[0] <= room.x - margin:
         k[0] = True
-    if -room.z+margin <= getposition()[2] <= room.z-margin:
+    if -room.z + margin <= getposition()[2] <= room.z - margin:
         k[1] = True
 
+    return k
+
+
+def checkHouse():
+    k = False
+    if not houseSize[2] <= getposition()[0] <= houseSize[3] - margin and houseSize[0] + margin <= getposition()[2] <= houseSize[1] - margin:
+        k = True
     return k
 
 
@@ -57,20 +67,52 @@ def wallcollide(fwd, strafe):
         glTranslatef(strafe * m[0], 0, strafe * m[8])
     else:
         if not checkwall()[0]:
-            if pos[0] > room.x-margin:
+            if pos[0] > room.x - margin:
                 d = pos[0] - room.x
-                glTranslatef(-d-margin, 0, fwd * m[10])
+                glTranslatef(-d - margin, 0, fwd * m[10])
                 glTranslatef(0, 0, strafe * m[8])
-            elif pos[0] < -room.x+margin:
+            elif pos[0] < -room.x + margin:
                 d = pos[0] + room.x
-                glTranslatef(-d+margin, 0, fwd * m[10])
+                glTranslatef(-d + margin, 0, fwd * m[10])
                 glTranslatef(0, 0, strafe * m[8])
 
         elif not checkwall()[1]:
-            if pos[2] > room.z-margin:
+            if pos[2] > room.z - margin:
                 d = pos[2] - room.z
-                glTranslatef(fwd * m[2], 0, -d-margin)
+                glTranslatef(fwd * m[2], 0, -d - margin)
                 glTranslatef(strafe * m[0], 0, 0)
-            elif pos[2] < -room.z+margin:
+            elif pos[2] < -room.z + margin:
                 d = pos[2] + room.z
-                glTranslatef(fwd * m[2], 0, -d+margin)
+                glTranslatef(fwd * m[2], 0, -d + margin)
+
+
+def houseCollide(fwd, strafe):
+    m = glGetDoublev(GL_MODELVIEW_MATRIX).flatten()
+    pos = getposition()
+    pos = pos * -1
+    if checkHouse()[0] and checkHouse()[1]:
+        glTranslatef(fwd * m[2], 0, fwd * m[10])
+        glTranslatef(strafe * m[0], 0, strafe * m[8])
+    elif not checkHouse()[0] and checkHouse()[1]:
+        glTranslatef(strafe * m[0], 0, strafe * m[8])
+    elif checkHouse()[0] and not checkHouse()[1]:
+        glTranslatef(fwd * m[2], 0, fwd * m[10])
+    else:
+        if not checkHouse()[0]:
+            if pos[0] > houseSize[2] - margin:
+                d = pos[0] + houseSize[2]
+                glTranslatef(-d + margin, 0, fwd * m[10])
+                glTranslatef(0, 0, strafe * m[8])
+            elif pos[0] < houseSize[3] + margin:
+                d = pos[0] + houseSize[3]
+                glTranslatef(-d + margin, 0, fwd * m[10])
+                glTranslatef(0, 0, strafe * m[8])
+
+        elif not checkHouse()[1]:
+            if pos[2] > houseSize[0] - margin:
+                d = pos[2] + houseSize[0]
+                glTranslatef(fwd * m[2], 0, -d + margin)
+                glTranslatef(strafe * m[0], 0, 0)
+            elif pos[2] < houseSize[1] + margin:
+                d = pos[2] + houseSize[1]
+                glTranslatef(fwd * m[2], 0, -d + margin)

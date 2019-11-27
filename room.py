@@ -1,10 +1,10 @@
 import pygame
 from OpenGL.GL import *
 
-x = 30.0
+x = 50.0
 ytop = 50.0
-yfloor = -1
-z = 30.0
+yfloor = 2
+z = 50.0
 
 
 def loadFloor():

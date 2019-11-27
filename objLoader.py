@@ -38,6 +38,10 @@ class OBJ:
         self.normals = []
         self.texcoords = []
         self.faces = []
+        self.maxX = 0
+        self.minX = 0
+        self.maxZ = 0
+        self.minZ = 0
 
         material = None
         for line in open(filename, "r"):
@@ -49,6 +53,14 @@ class OBJ:
                 if swapyz:
                     v = v[0], v[2], v[1]
                 self.vertices.append(v)
+                if v[0] > self.maxX:
+                    self.maxX = v[0]
+                if v[0] < self.minX:
+                    self.minX = v[0]
+                if v[2] > self.maxZ:
+                    self.maxZ = v[2]
+                if v[2] < self.minZ:
+                    self.minZ = v[2]
             elif values[0] == 'vn':
                 v = list(map(float, values[1:4]))
                 if swapyz:

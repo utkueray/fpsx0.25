@@ -27,7 +27,7 @@ vertcont = vert
 wall = True  # check if cursor hits the window borders
 jump = False  # check if player wants to jump
 speed = False  # check if slow down or fast
-vel = 0.1  # walking velocity
+vel = 0.3  # walking velocity
 jumpvel = 0.3  # jump velocity
 c = 0
 
@@ -56,12 +56,14 @@ def Crosshair(x, y, w):
 # add object
 sky = OBJ('SnowTerrain.obj')
 m4 = OBJ("M4a1.obj")
-house = OBJ("OldHouse.obj")
+house = OBJ("Medieval.obj")
 
-glTranslatef(10, -3, 10)
+glTranslatef(20, -7, 15)
 bullet_list = []
 
 clock = pygame.time.Clock()
+
+tower = False
 
 
 def drawText(value, x, y, windowHeight, windowWidth, step=18):
@@ -100,9 +102,6 @@ while True:
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    # load map
-    room.loadFloor()
-
     # keyboard functions
     keys = pygame.key.get_pressed()
 
@@ -127,12 +126,21 @@ while True:
 
     fwd = -vel * (keys[K_w] - keys[K_s])
     strafe = vel * (keys[K_a] - keys[K_d])
-
-    if abs(fwd) or abs(strafe):
+    if (abs(fwd) or abs(strafe)) and abs(sqrt((player.getposition()[0]*player.getposition()[0]) + (player.getposition()[2]*player.getposition()[2]))) > 14:
         try:
             player.wallcollide(fwd, strafe)
         except IndexError:
             pass
+
+    if sqrt((player.getposition()[0]*player.getposition()[0]) + (player.getposition()[2]*player.getposition()[2])) <= 14:
+        if player.getposition()[0] > 0 and player.getposition()[2] > 0:
+            glTranslatef(-0.2, 0, -0.2)
+        elif player.getposition()[0] < 0 and player.getposition()[2] > 0:
+            glTranslatef(0.2, 0, -0.2)
+        elif player.getposition()[0] > 0 and player.getposition()[2] < 0:
+            glTranslatef(-0.21, 0, 0.2)
+        elif player.getposition()[0] < 0 and player.getposition()[2] < 0:
+            glTranslatef(0.2, 0, 0.2)
 
     if not jump:
         if keys[pygame.K_SPACE]:
@@ -200,7 +208,7 @@ while True:
     glPushMatrix()
     buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
     s = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
-    glTranslate(s[0], 2.75, s[2])  # becomes third person if removed
+    glTranslate(s[0], 6.75, s[2])  # becomes third person if removed
     glTranslatef(0, jumpvel * np.linspace(-1, 1)[c], 0)
     m = buffer.flatten()
     glRotate(-thetax, m[1], m[5], m[9])  # [1]
@@ -211,6 +219,10 @@ while True:
 
     glCallList(house.gl_list)
 
+    # load map
+    room.loadFloor()
+
+
     # crosshair
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
@@ -219,18 +231,15 @@ while True:
     glMatrixMode(GL_MODELVIEW)
     glPushMatrix()
     glLoadIdentity()
-
     glDisable(GL_DEPTH_TEST)
     Crosshair(size / 2, size / 2, 15)
     glEnable(GL_DEPTH_TEST)
-
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
     glPopMatrix()
-
-    #HUD
-    drawText("Time: " + str(int(end-start)), 48, 98, 100, 100)
+    # HUD
+    drawText("Time: " + str(int(end - start)), 48, 98, 100, 100)
 
     drawText(str(int(clock.get_fps())), 1, 95, 100, 100)
     drawText("Health: " + str(int(100)) + "%", 90, 5, 100, 100)
@@ -240,5 +249,4 @@ while True:
         drawText("Kills: " + str(int(0)), 48, 70, 100, 100)
         drawText("Deaths: " + str(int(0)), 48, 65, 100, 100)
     end = timer()
-
     pygame.display.flip()

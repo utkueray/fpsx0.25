@@ -1,4 +1,4 @@
-# Blender MTL File: 'Old House 2 3D Models.blend'
+# Blender MTL File: 'Medieval tower_low_.blend'
 # Material Count: 1
 
 newmtl Material
@@ -10,4 +10,4 @@ Ke 0.0 0.0 0.0
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd Housebody.jpg
+map_Kd anan.jpg
