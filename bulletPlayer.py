@@ -3,11 +3,11 @@ from math import cos, sin, atan2
 from math import radians as rad
 
 
-class Bullet:
+class PBullet:
     # bullet dimensions
-    x = 5
-    y = 0.2
-    z = 0.2
+    x = 0.05
+    y = 0.05
+    z = 0.05
 
     grid = [
         [x, -y, z],
@@ -37,8 +37,8 @@ class Bullet:
 
     def __init__(self):
 
-        self.bvertices = Bullet.grid
-        self.bedges = Bullet.bedges
+        self.bvertices = PBullet.grid
+        self.bedges = PBullet.bedges
         self.thetax = 0
         self.thetay = 0
         self.bvel = 0.1

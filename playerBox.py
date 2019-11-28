@@ -3,11 +3,11 @@ from math import cos, sin, atan2
 from math import radians as rad
 
 
-class Bullet:
+class PlayerBox:
     # bullet dimensions
-    x = 5
-    y = 0.2
-    z = 0.2
+    x = 1
+    y = 3
+    z = 1
 
     grid = [
         [x, -y, z],
@@ -37,24 +37,23 @@ class Bullet:
 
     def __init__(self):
 
-        self.bvertices = Bullet.grid
-        self.bedges = Bullet.bedges
+        self.bvertices = PlayerBox.grid
+        self.bedges = PlayerBox.bedges
         self.thetax = 0
         self.thetay = 0
-        self.bvel = 0.1
+        self.bvel = 0.5
         self.pos = [0, 0, 0]
 
-    def drawbullet(self):
+    def drawTarget(self):
         glLineWidth(3)
         glBegin(GL_LINES)
         for edge in self.bedges:
-
             for vertex in edge:
                 glVertex3fv(self.bvertices[vertex])
 
         glEnd()
 
-    def bmove(self, x, y, z):
+    def tmove(self, x, y, z):
 
         self.bvertices = list(map(lambda vert: (vert[0] + x,
                                                 vert[1] + y,
@@ -63,7 +62,7 @@ class Bullet:
         self.pos[1] += y
         self.pos[2] += z
 
-    def brotate(self, thetax, thetay):
+    def trotate(self, thetax, thetay):
         self.thetax = thetax
         self.thetay = thetay
         self.bvertices = list(map(lambda vert: (vert[2] * cos(rad(thetax)) - vert[0] * sin(rad(thetax)),

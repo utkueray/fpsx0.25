@@ -7,6 +7,10 @@ from pygame.locals import *
 from timeit import default_timer as timer
 from ObjLoader import *
 from bullet import Bullet
+from target import Target
+import random
+from bulletPlayer import PBullet
+from playerBox import PlayerBox
 
 x = 2.0
 y = 1.0
@@ -60,6 +64,8 @@ house = OBJ("Medieval.obj")
 
 glTranslatef(20, -7, 15)
 bullet_list = []
+target_list = []
+targetbullet_list = []
 
 clock = pygame.time.Clock()
 
@@ -97,6 +103,34 @@ def drawText(value, x, y, windowHeight, windowWidth, step=18):
     glMatrixMode(GL_MODELVIEW)
 
 
+t1 = Target()
+t1.trotate(thetax, thetay)
+player.getposition()
+t1.tmove(14, player.getposition()[1], 14)
+target_list.append(t1)
+t2 = Target()
+t2.trotate(thetax, thetay)
+player.getposition()
+t2.tmove(-14, player.getposition()[1], 14)
+target_list.append(t2)
+t3 = Target()
+t3.trotate(thetax, thetay)
+player.getposition()
+t3.tmove(14, player.getposition()[1], -14)
+target_list.append(t3)
+t4 = Target()
+t4.trotate(thetax, thetay)
+player.getposition()
+t4.tmove(-14, player.getposition()[1], -14)
+target_list.append(t4)
+targetfirerate = 4
+
+playerT = Target()
+playerT.trotate(thetax, thetay)
+player.getposition()
+playerT.tmove(player.getposition()[0], player.getposition()[1], player.getposition()[2])
+target_list.append(t1)
+
 while True:
     clock.tick()
 
@@ -109,7 +143,7 @@ while True:
         if keys[pygame.K_ESCAPE]:
             quit()
 
-    # gettin hot
+    """# gettin hot
 
     if int(end - start + 1) % 23 == 0 and speed:
         speed = False
@@ -121,7 +155,7 @@ while True:
     else:
         vel = 0.1
         jumpvel = 0.3
-
+    """
     # Movement
 
     fwd = -vel * (keys[K_w] - keys[K_s])
@@ -183,14 +217,59 @@ while True:
 
     # firing
 
-    if pygame.mouse.get_pressed() == (1, 0, 0):
-        b = Bullet()
-        b.brotate(thetax, thetay)
-        b.bmove(pos[0], pos[1], pos[2])
-        bullet_list.append(b)
+    for item in target_list:
+        item.drawTarget()
 
+    if int(start-end) % 7 == 0 and len(targetbullet_list) < 10:
+        b3 = Bullet()
+        b3.brotate(random.randint(0,360), random.randint(0,360))
+        b3.bmove(14, pos[1], 14)
+        targetbullet_list.append(b3)
+        fire = False
+
+    if int(start-end) % 7 == 0 and len(targetbullet_list) < 10:
+        b3 = Bullet()
+        b3.brotate(random.randint(0,360), random.randint(0,360))
+        b3.bmove(-14, pos[1], 14)
+        targetbullet_list.append(b3)
+        fire = False
+
+    if int(start-end) % 7 == 0and len(targetbullet_list) < 10:
+        b3 = Bullet()
+        b3.brotate(random.randint(0,360), random.randint(0,360))
+        b3.bmove(14, pos[1], -14)
+        targetbullet_list.append(b3)
+        fire = False
+
+    if int(start-end) % 7 == 0 and len(targetbullet_list) < 10:
+        b3 = Bullet()
+        b3.brotate(random.randint(0,360), random.randint(0,360))
+        b3.bmove(-14, pos[1], -14)
+        targetbullet_list.append(b3)
+        fire = False
+    if pygame.mouse.get_pressed() == (1, 0, 0):
+        if len(bullet_list) < 30:
+            b = PBullet()
+            b.brotate(thetax, thetay)
+            b.bmove(pos[0], pos[1], pos[2])
+            bullet_list.append(b)
+            fire = True
+
+    for i in targetbullet_list:
+        i.bmove(i.bvel * sin(radians(i.thetax)), -i.bvel * sin(radians(i.thetay)), -i.bvel * cos(radians(i.thetax)))
+        i.drawbullet()
+        try:
+            if abs(i.pos[0]) > 50:
+                targetbullet_list.remove(i)
+            if abs(i.pos[2]) > 50:
+                targetbullet_list.remove(i)
+            if abs(i.pos[1]) > 50 or i.pos[1] < 0:
+                targetbullet_list.remove(i)
+        except ValueError:
+            pass
     for i in bullet_list:
         i.bmove(i.bvel * sin(radians(i.thetax)), -i.bvel * sin(radians(i.thetay)), -i.bvel * cos(radians(i.thetax)))
+
         i.drawbullet()
         try:
             if abs(i.pos[0]) > 50:
@@ -221,7 +300,22 @@ while True:
 
     # load map
     room.loadFloor()
+    glPushMatrix()
 
+    playerT = PlayerBox()
+    playerT.trotate(thetax, thetay)
+    player.getposition()
+    playerT.tmove(player.getposition()[0], player.getposition()[1], player.getposition()[2]+0.4)
+    buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
+    s = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
+    glTranslate(s[0], 6.75, s[2])  # becomes third person if removed
+    glTranslatef(0, jumpvel * np.linspace(-1, 1)[c], 0)
+    m = buffer.flatten()
+    glRotate(-thetax, m[1], m[5], m[9])  # [1]
+    glRotate(thetay + 180, m[0], m[4], m[8])  # [1]
+    glRotate(atan2(-m[4], m[5]) * 57.29577, m[2], m[6], m[10])
+    playerT.drawTarget()
+    glPopMatrix()
 
     # crosshair
     glMatrixMode(GL_PROJECTION)
@@ -242,7 +336,8 @@ while True:
     drawText("Time: " + str(int(end - start)), 48, 98, 100, 100)
 
     drawText(str(int(clock.get_fps())), 1, 95, 100, 100)
-    drawText("Health: " + str(int(100)) + "%", 90, 5, 100, 100)
+    drawText("Health: " + str(int(100)) + "%", 90, 10, 100, 100)
+    drawText("Ammo: " + str(30-len(bullet_list)), 90, 5, 100, 100)
 
     scoreBoard = keys[K_TAB]
     if scoreBoard:
