@@ -45,7 +45,7 @@ class PlayerBox:
         self.pos = [0, 0, 0]
 
     def drawTarget(self):
-        glLineWidth(3)
+        glLineWidth(0.001)
         glBegin(GL_LINES)
         for edge in self.bedges:
             for vertex in edge:

@@ -47,6 +47,15 @@ thetax = 0
 thetay = 0
 
 
+def checkBox(list1, list2, box1, bullet):
+    if (-box1.pos[0] - box1.x <= bullet.pos[0] <= box1.pos[0] + box1.x) and (
+            -box1.pos[1] - box1.y <= bullet.pos[1] <= box1.pos[1] + box1.y) and (
+            -box1.pos[2] - box1.z <= bullet.pos[2] <= box1.pos[2] + box1.z):
+        print(box1.pos)
+        list1.remove(box1)
+        list2.remove(bullet)
+
+
 def Crosshair(x, y, w):
     glColor3f(1.0, 1.0, 1.0)
     glBegin(GL_LINES)
@@ -61,6 +70,8 @@ def Crosshair(x, y, w):
 sky = OBJ('SnowTerrain.obj')
 m4 = OBJ("M4a1.obj")
 house = OBJ("Medieval.obj")
+floor = OBJ("untitled.obj")
+soldier = OBJ("soldie.obj")
 
 glTranslatef(20, -7, 15)
 bullet_list = []
@@ -106,22 +117,22 @@ def drawText(value, x, y, windowHeight, windowWidth, step=18):
 t1 = Target()
 t1.trotate(thetax, thetay)
 player.getposition()
-t1.tmove(14, player.getposition()[1], 14)
+t1.tmove(14, 3, 14)
 target_list.append(t1)
 t2 = Target()
 t2.trotate(thetax, thetay)
 player.getposition()
-t2.tmove(-14, player.getposition()[1], 14)
+t2.tmove(-14, 5, 14)
 target_list.append(t2)
 t3 = Target()
 t3.trotate(thetax, thetay)
 player.getposition()
-t3.tmove(14, player.getposition()[1], -14)
+t3.tmove(14, 7, -14)
 target_list.append(t3)
 t4 = Target()
 t4.trotate(thetax, thetay)
 player.getposition()
-t4.tmove(-14, player.getposition()[1], -14)
+t4.tmove(-14, 9, -14)
 target_list.append(t4)
 targetfirerate = 4
 
@@ -131,10 +142,22 @@ player.getposition()
 playerT.tmove(player.getposition()[0], player.getposition()[1], player.getposition()[2])
 target_list.append(t1)
 
+def Lights():
+    glEnable(GL_DEPTH_TEST)
+    glShadeModel(GL_SMOOTH)
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, (1, 1, 1, 0.0))
+    glLightfv(GL_LIGHT0, GL_POSITION, (0.0, 40.0, 10.0, 100.0))
+    glLightfv(GL_LIGHT0, GL_SPECULAR, (1, 1, 1, 0))
+    glLightfv(GL_LIGHT0, GL_AMBIENT, (1, 1, 1, 0))
+
+
 while True:
     clock.tick()
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    Lights()
+
 
     # keyboard functions
     keys = pygame.key.get_pressed()
@@ -160,13 +183,15 @@ while True:
 
     fwd = -vel * (keys[K_w] - keys[K_s])
     strafe = vel * (keys[K_a] - keys[K_d])
-    if (abs(fwd) or abs(strafe)) and abs(sqrt((player.getposition()[0]*player.getposition()[0]) + (player.getposition()[2]*player.getposition()[2]))) > 14:
+    if (abs(fwd) or abs(strafe)) and abs(sqrt((player.getposition()[0] * player.getposition()[0]) + (
+            player.getposition()[2] * player.getposition()[2]))) > 14:
         try:
             player.wallcollide(fwd, strafe)
         except IndexError:
             pass
 
-    if sqrt((player.getposition()[0]*player.getposition()[0]) + (player.getposition()[2]*player.getposition()[2])) <= 14:
+    if sqrt((player.getposition()[0] * player.getposition()[0]) + (
+            player.getposition()[2] * player.getposition()[2])) <= 14:
         if player.getposition()[0] > 0 and player.getposition()[2] > 0:
             glTranslatef(-0.2, 0, -0.2)
         elif player.getposition()[0] < 0 and player.getposition()[2] > 0:
@@ -197,7 +222,7 @@ while True:
     pygame.mouse.set_visible(False)
 
     if wall:
-        player.rotateworld(mouse_dx * 0.15, mouse_dy * 0.15)
+        player.rotateworld(mouse_dx * 0.05, mouse_dy * 0.05)
         thetax = degrees(atan2(m[8], m[0]))
         thetay = degrees(atan2(-m[6], -m[8] * sin(radians(thetax)) + m[10] * cos(radians(thetax))))
 
@@ -220,33 +245,34 @@ while True:
     for item in target_list:
         item.drawTarget()
 
-    if int(start-end) % 7 == 0 and len(targetbullet_list) < 10:
+    if int(start - end) % 7 == 0 and len(targetbullet_list) < 10:
         b3 = Bullet()
-        b3.brotate(random.randint(0,360), random.randint(0,360))
+        b3.brotate(random.randint(0, 360), random.randint(0, 360))
         b3.bmove(14, pos[1], 14)
         targetbullet_list.append(b3)
         fire = False
 
-    if int(start-end) % 7 == 0 and len(targetbullet_list) < 10:
-        b3 = Bullet()
-        b3.brotate(random.randint(0,360), random.randint(0,360))
-        b3.bmove(-14, pos[1], 14)
-        targetbullet_list.append(b3)
+    if int(start - end) % 7 == 0 and len(targetbullet_list) < 10:
+        b4 = Bullet()
+        b4.brotate(random.randint(0, 360), random.randint(0, 360))
+        b4.bmove(-14, pos[1], 14)
+        targetbullet_list.append(b4)
         fire = False
 
-    if int(start-end) % 7 == 0and len(targetbullet_list) < 10:
-        b3 = Bullet()
-        b3.brotate(random.randint(0,360), random.randint(0,360))
-        b3.bmove(14, pos[1], -14)
-        targetbullet_list.append(b3)
+    if int(start - end) % 7 == 0 and len(targetbullet_list) < 10:
+        b5 = Bullet()
+        b5.brotate(random.randint(0, 360), random.randint(0, 360))
+        b5.bmove(14, pos[1], -14)
+        targetbullet_list.append(b5)
         fire = False
 
-    if int(start-end) % 7 == 0 and len(targetbullet_list) < 10:
-        b3 = Bullet()
-        b3.brotate(random.randint(0,360), random.randint(0,360))
-        b3.bmove(-14, pos[1], -14)
-        targetbullet_list.append(b3)
+    if int(start - end) % 7 == 0 and len(targetbullet_list) < 10:
+        b6 = Bullet()
+        b6.brotate(random.randint(0, 360), random.randint(0, 360))
+        b6.bmove(-14, pos[1], -14)
+        targetbullet_list.append(b6)
         fire = False
+
     if pygame.mouse.get_pressed() == (1, 0, 0):
         if len(bullet_list) < 30:
             b = PBullet()
@@ -256,6 +282,7 @@ while True:
             fire = True
 
     for i in targetbullet_list:
+
         i.bmove(i.bvel * sin(radians(i.thetax)), -i.bvel * sin(radians(i.thetay)), -i.bvel * cos(radians(i.thetax)))
         i.drawbullet()
         try:
@@ -267,11 +294,14 @@ while True:
                 targetbullet_list.remove(i)
         except ValueError:
             pass
+
     for i in bullet_list:
         i.bmove(i.bvel * sin(radians(i.thetax)), -i.bvel * sin(radians(i.thetay)), -i.bvel * cos(radians(i.thetax)))
-
         i.drawbullet()
         try:
+            for j in targetbullet_list:
+                checkBox(targetbullet_list, bullet_list, j, i)
+
             if abs(i.pos[0]) > 50:
                 bullet_list.remove(i)
             if abs(i.pos[2]) > 50:
@@ -297,15 +327,16 @@ while True:
     glPopMatrix()
 
     glCallList(house.gl_list)
+    glPushMatrix()
+    glScale(0.5,0.5,0.5)
+    glTranslate(28, 6, 28)
+    glTranslate(0, -3, 0)
+    glCallList(soldier.gl_list)
+    glPopMatrix()
 
     # load map
-    room.loadFloor()
+    glCallList(floor.gl_list)
     glPushMatrix()
-
-    playerT = PlayerBox()
-    playerT.trotate(thetax, thetay)
-    player.getposition()
-    playerT.tmove(player.getposition()[0], player.getposition()[1], player.getposition()[2]+0.4)
     buffer = glGetDoublev(GL_MODELVIEW_MATRIX)
     s = (-1 * np.mat(buffer[:3, :3]) * np.mat(buffer[3, :3]).T).reshape(3, 1)
     glTranslate(s[0], 6.75, s[2])  # becomes third person if removed
@@ -314,6 +345,11 @@ while True:
     glRotate(-thetax, m[1], m[5], m[9])  # [1]
     glRotate(thetay + 180, m[0], m[4], m[8])  # [1]
     glRotate(atan2(-m[4], m[5]) * 57.29577, m[2], m[6], m[10])
+    playerT = PlayerBox()
+    playerT.trotate(thetax, thetay)
+    player.getposition()
+    playerT.tmove(player.getposition()[0], player.getposition()[1], player.getposition()[2])
+
     playerT.drawTarget()
     glPopMatrix()
 
@@ -337,11 +373,18 @@ while True:
 
     drawText(str(int(clock.get_fps())), 1, 95, 100, 100)
     drawText("Health: " + str(int(100)) + "%", 90, 10, 100, 100)
-    drawText("Ammo: " + str(30-len(bullet_list)), 90, 5, 100, 100)
+    drawText("Ammo: " + str(30 - len(bullet_list)), 90, 5, 100, 100)
 
     scoreBoard = keys[K_TAB]
     if scoreBoard:
         drawText("Kills: " + str(int(0)), 48, 70, 100, 100)
         drawText("Deaths: " + str(int(0)), 48, 65, 100, 100)
     end = timer()
+
+    for i in bullet_list:
+        for j in target_list:
+            try:
+                checkBox(target_list, bullet_list, j, i)
+            except ValueError:
+                pass
     pygame.display.flip()

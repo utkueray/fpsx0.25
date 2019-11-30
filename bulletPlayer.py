@@ -41,7 +41,7 @@ class PBullet:
         self.bedges = PBullet.bedges
         self.thetax = 0
         self.thetay = 0
-        self.bvel = 0.1
+        self.bvel = 4
         self.pos = [0, 0, 0]
 
     def drawbullet(self):
